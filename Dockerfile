@@ -1,13 +1,15 @@
-FROM apache/airflow:2.3.3-python3.9 AS base
+FROM apache/airflow:2.6.2-python3.9 AS base
 
 # Change root user to use 'apt-get'
 USER root
 RUN sudo apt-get update && \
 apt-get install -y libpq-dev gcc build-essential
 
+
 USER airflow
 RUN pip install --upgrade pip
-
+RUN pip install --upgrade typing_extensions
+RUN pip install --upgrade attrs
 # Created from apache/airflow image
 ENV AIRFLOW_HOME=/opt/airflow
 

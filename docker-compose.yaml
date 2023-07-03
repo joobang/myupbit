@@ -10,7 +10,7 @@ x-airflow-common:
     &airflow-common-env
     PYTHONPATH: /opt/airflow
     AIRFLOW_HOME: /opt/airflow
-    AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     # For backward compatibility, with Airflow <2.3
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -85,8 +85,8 @@ services:
     restart: always
     depends_on:
       <<: *airflow-common-depends-on
-      #airflow-init:
-      #  condition: service_completed_successfully
+      airflow-init:
+        condition: service_completed_successfully
 
   airflow-scheduler:
     <<: *airflow-common
@@ -100,8 +100,8 @@ services:
     restart: always
     depends_on:
       <<: *airflow-common-depends-on
-      #airflow-init:
-      #  condition: service_completed_successfully
+      airflow-init:
+        condition: service_completed_successfully
 
   airflow-worker:
     <<: *airflow-common
@@ -122,8 +122,8 @@ services:
     restart: always
     depends_on:
       <<: *airflow-common-depends-on
-      #airflow-init:
-      #  condition: service_completed_successfully
+      airflow-init:
+        condition: service_completed_successfully
 
   airflow-triggerer:
     <<: *airflow-common
@@ -137,9 +137,18 @@ services:
     restart: always
     depends_on:
       <<: *airflow-common-depends-on
-      #airflow-init:
-      # condition: service_completed_successfully
+      airflow-init:
+        condition: service_completed_successfully
   
+  airflow-init:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+    command: bash -c 'airflow db init && airflow users create --username admin --password admin --firstname Anonymous --lastname Admin --role Admin --email admin@example.org'
+    
+
   airflow-cli:
     <<: *airflow-common
     profiles:
@@ -172,8 +181,8 @@ services:
     restart: always
     depends_on:
       <<: *airflow-common-depends-on
-      #airflow-init:
-      # condition: service_completed_successfully
+      airflow-init:
+       condition: service_completed_successfully
 
 volumes:
   postgres-db-volume:

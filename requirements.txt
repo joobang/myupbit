@@ -8,7 +8,7 @@ alembic==1.8.1
     # via apache-airflow
 anyio==3.6.1
     # via httpcore
-apache-airflow==2.3.3
+apache-airflow==2.6.2
     # via
     #   -r requirements.in
     #   apache-airflow-providers-postgres
@@ -28,11 +28,7 @@ apispec[yaml]==3.3.2
     # via flask-appbuilder
 argcomplete==1.12.2
     # via apache-airflow
-attrs==20.3.0
-    # via
-    #   apache-airflow
-    #   cattrs
-    #   jsonschema
+
 babel==2.10.3
     # via flask-babel
 backports-zoneinfo==0.2.1
