@@ -22,3 +22,4 @@ RUN pip install -r requirements.txt --use-deprecated=legacy-resolver
 COPY --chown=airflow:root src/. .
 
 COPY --chown=airflow:root . .
+RUN chmod -R 777 /opt/airflow/logs
