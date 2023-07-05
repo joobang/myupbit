@@ -29,8 +29,8 @@ x-airflow-common:
     # for other purpose (development, test and especially production usage) build/extend Airflow image.
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     AIRFLOW__WEBSERVER__SECRET_KEY: g7QoAYgAxe6N3taMNL9hcAgDPEx # Random generated
-    AIRFLOW_CONN_LOCAL_POSTGRES: postgresql+psycopg2://admin:admin@postgres_analytics:5432/upbit
-    AIRFLOW_CONN_DOCKER_POSTGRES: postgresql+psycopg2://airflow:airflow@:5432/upbit
+    AIRFLOW_CONN_LOCAL_POSTGRES: postgresql+psycopg2://admin:admin@host.docker.internal:5432/upbit
+    AIRFLOW_CONN_DOCKER_POSTGRES: postgresql+psycopg2://airflow:airflow@postgres_analytics:5432/upbit
 
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/src/dags:/opt/airflow/dags
@@ -210,3 +210,4 @@ services:
 
 volumes:
   postgres-db-volume:
+  postgres_analytics_data:
