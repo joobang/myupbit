@@ -7,5 +7,5 @@ DAG_DEFAULT_ARGS: Dict[str, Any] = {
     'owner': 'myupbit',
     'depends_on_past': False,
     'retry_delay': timedelta(minutes=5),
-    'retries': 1,
+    'retries': 0,
 }
