@@ -7,6 +7,7 @@ from utils.dag import DAG_DEFAULT_ARGS
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 import requests
+import json
 
 dag_default_args: Dict[str, Any] = {
     **DAG_DEFAULT_ARGS,
@@ -32,7 +33,7 @@ with DAG(
 ) as dag:
     
     def get_day_candle():
-        url = "https://api.upbit.com/v1/candles/days?market=KRW-BTC&to=2020-01-01 00:00:00&count=1"
+        url = "https://api.upbit.com/v1/candles/days?market=KRW-BTC&to="+"2020-01-01 00:00:00"+"&count=1"
         headers = {"accept": "application/json"}
         response = requests.get(url, headers=headers)
         return response.text
@@ -46,6 +47,9 @@ with DAG(
     def save_to_postgres(**context):
         response_text = context['task_instance'].xcom_pull(task_ids='day_candle_api')
         print(response_text)
+        data = json.loads(response_text)
+        
+        print(data[0]['market'])
     
     t2 = PythonOperator(
         task_id='save_to_postgres',
