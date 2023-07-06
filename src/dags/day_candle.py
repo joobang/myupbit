@@ -33,8 +33,12 @@ with DAG(
     schedule_interval='@once'
 ) as dag:
     
-    def get_day_candle():
-        url = "https://api.upbit.com/v1/candles/days?market=KRW-BTC&to="+"2020-01-01 00:00:00"+"&count=1"
+    def get_day_candle(**context):
+        #url = "https://api.upbit.com/v1/candles/days?market=KRW-BTC&to="+"2020-01-01 00:00:00"+"&count=1"
+        execution_date = context['execution_date']
+        print(execution_date)
+        formatted_execution_date = execution_date.strftime("%Y-%m-%d %H:%M:%S")
+        url = f"https://api.upbit.com/v1/candles/days?market=KRW-BTC&to={formatted_execution_date}&count=1"
         headers = {"accept": "application/json"}
         response = requests.get(url, headers=headers)
         return response.text
