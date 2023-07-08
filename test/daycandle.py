@@ -10,5 +10,5 @@ response = requests.get(url, headers=headers)
 #print(response.text)
 
 data = json.loads(response.text)
-
-print([tuple(item.values()) for item in data ])
+print(type(data))
+#print([tuple(item.values()) for item in data ])
