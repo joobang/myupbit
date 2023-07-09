@@ -7,8 +7,11 @@ from utils.dag import DAG_DEFAULT_ARGS
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.providers.postgres.operators.postgres import PostgresOperator
+from airflow.exceptions import AirflowFailException
 import requests
 import json
+import time
+from psycopg2 import extras
 
 dag_default_args: Dict[str, Any] = {
     **DAG_DEFAULT_ARGS,
@@ -26,6 +29,22 @@ dag_default_args: Dict[str, Any] = {
 #     'max_active_tis_per_dag': 2,
 # }
 
+def task_fail(context):
+    # 실패 메시지를 출력하고 Airflow 예외를 발생시킴으로써 DAG를 종료.
+    task_instance = context['task_instance']
+    print(f"Task {task_instance.task_id} 실패!")
+    raise AirflowFailException("Task 실패로 인해 전체 DAG 종료.")
+
+def get_day_candle_bulk(task_date):
+    #url = "https://api.upbit.com/v1/candles/days?market=KRW-BTC&to="+"2020-01-01 00:00:00"+"&count=1"
+    formatted_execution_date = task_date.strftime("%Y-%m-%d %H:%M:%S")
+    #print(formatted_execution_date)
+    url = f"https://api.upbit.com/v1/candles/days?market=KRW-BTC&to={formatted_execution_date}&count=200"
+    headers = {"accept": "application/json"}
+    response = requests.get(url, headers=headers)
+                
+    return response.text
+
 with DAG(
     dag_id='day_candle_default_bulk',
     default_args=dag_default_args,
@@ -33,39 +52,50 @@ with DAG(
     schedule_interval='@once'
 ) as dag:
     
-    # def get_day_candle_bulk(**context):
-    #     #url = "https://api.upbit.com/v1/candles/days?market=KRW-BTC&to="+"2020-01-01 00:00:00"+"&count=1"
-    #     now_date = datetime.now()
-    #     print(now_date)
-    #     formatted_execution_date = now_date.strftime("%Y-%m-%d %H:%M:%S")
-    #     url = f"https://api.upbit.com/v1/candles/days?market=KRW-BTC&to={formatted_execution_date}&count=200"
-    #     headers = {"accept": "application/json"}
-    #     response = requests.get(url, headers=headers)
-    #     #print(response.text)
-    #     #diff = datetime.now() - datetime(2023,6,27)
-    #     #print(diff.days)
-                
-    #     return response.text
+    def save_to_bulklist(**context):
+        base_date = datetime.now()
+        bulk_list = []
+
+        for i in range(11):
+            task_date = base_date - timedelta(days=200 * i)
+            candle_list = get_day_candle_bulk(task_date)
+            candle_json = json.loads(candle_list)
+            print(i)
+            print(candle_list)
+            print(candle_json)
+            bulk_list.extend(candle_list)
+            time.sleep(1)
+            
+        bulk_tuple = [tuple(item.values()) for item in bulk_list]
+        
+        context['task_instance'].xcom_push(key='bulk_tuple', value=bulk_tuple)
     
-    # t1 = PythonOperator(
-    #     task_id='get_bulk_data',
-    #     python_callable=get_day_candle_bulk,
-    #     dag=dag
-    # )
-    def get_execution_date(**context):
-        execution_date = context['execution_date']
-        print(f"Execution date is {execution_date}")
-    
-    base_date = datetime.now()
-    
-    for i in range(11):
-        task_date = base_date - timedelta(days=200 * i)
-        t1 = PythonOperator(
-            task_id='test get bulk data',
-            python_callable=get_execution_date,
-            provide_context=True,
-            execution_date=task_date,  # use the dynamic date here
-            dag=dag
-        )
-    
-    t1
+    get_bulk_data = PythonOperator(
+        task_id='get_bulk_data',
+        python_callable=save_to_bulklist,
+        provide_context=True,  # 이를 설정하면, callable 함수에 context를 전달
+        on_failure_callback=task_fail,
+        dag=dag
+    )
+       
+    def bulk_insert(**context):
+        data = context['task_instance'].xcom_pull(task_ids='get_bulk_data', key='bulk_tuple')
+        insert_query = """
+            INSERT INTO day_candle (market, candle_date_time_utc, candle_date_time_kst, opening_price, high_price, low_price, trade_price, last_timestamp, candle_acc_trade_price, candle_acc_trade_volume, prev_closing_price, change_price, change_rate)
+            VALUES %s
+        """
+        conn = psycopg2.connect("dbname=upbit user=airflow password=airflow")
+        cur = conn.cursor()
+        extras.execute_values(cur, insert_query, data)
+        conn.commit()
+        cur.close()
+        conn.close()
+            
+    insert_local = PythonOperator(
+        task_id='insert_local',
+        python_callable=bulk_insert,
+        provide_context=True,
+        on_failure_callback=task_fail,
+        dag=dag
+    )
+    get_bulk_data

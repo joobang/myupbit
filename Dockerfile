@@ -10,6 +10,7 @@ USER airflow
 RUN pip install --upgrade pip
 RUN pip install --upgrade typing_extensions
 RUN pip install --upgrade attrs
+RUN pip install --upgrade psycopg2
 # Created from apache/airflow image
 ENV AIRFLOW_HOME=/opt/airflow
 
