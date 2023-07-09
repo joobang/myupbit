@@ -11,6 +11,7 @@ from airflow.exceptions import AirflowFailException
 import requests
 import json
 import time
+import psycopg2
 from psycopg2 import extras
 
 dag_default_args: Dict[str, Any] = {
@@ -63,7 +64,7 @@ with DAG(
             print(i)
             print(candle_list)
             print(candle_json)
-            bulk_list.extend(candle_list)
+            bulk_list.extend(candle_json)
             time.sleep(1)
             
         bulk_tuple = [tuple(item.values()) for item in bulk_list]
@@ -84,8 +85,10 @@ with DAG(
             INSERT INTO day_candle (market, candle_date_time_utc, candle_date_time_kst, opening_price, high_price, low_price, trade_price, last_timestamp, candle_acc_trade_price, candle_acc_trade_volume, prev_closing_price, change_price, change_rate)
             VALUES %s
         """
-        conn = psycopg2.connect("dbname=upbit user=airflow password=airflow")
+        print(data)
+        conn = psycopg2.connect("dbname=upbit user=airflow password=airflow host=postgres_analytics port=5432")
         cur = conn.cursor()
+        #cur.execute(insert_query, data)
         extras.execute_values(cur, insert_query, data)
         conn.commit()
         cur.close()
@@ -98,4 +101,4 @@ with DAG(
         on_failure_callback=task_fail,
         dag=dag
     )
-    get_bulk_data
+    get_bulk_data >> insert_local
