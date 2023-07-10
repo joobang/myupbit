@@ -50,7 +50,7 @@ with DAG(
     dag_id='day_candle_default_bulk',
     default_args=dag_default_args,
     description='get KRW-BTC day candle first data bulk',
-    schedule_interval='@once'
+    schedule_interval=None
 ) as dag:
     
     def save_to_bulklist(**context):
@@ -61,9 +61,9 @@ with DAG(
             task_date = base_date - timedelta(days=200 * i)
             candle_list = get_day_candle_bulk(task_date)
             candle_json = json.loads(candle_list)
-            print(i)
-            print(candle_list)
-            print(candle_json)
+            #print(i)
+            #print(candle_list)
+            #print(candle_json)
             bulk_list.extend(candle_json)
             time.sleep(1)
             
