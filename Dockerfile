@@ -5,9 +5,6 @@ USER root
 RUN sudo apt-get update && \
 apt-get install -y libpq-dev gcc build-essential
 
-# Download PostgreSQL JDBC driver
-RUN mkdir -p /opt/spark/jars/ && wget -P /opt/spark/jars/ https://jdbc.postgresql.org/download/postgresql-42.2.16.jar
-
 USER airflow
 RUN pip install --upgrade pip
 RUN pip install --upgrade typing_extensions
