@@ -3,7 +3,9 @@ FROM apache/airflow:2.6.2-python3.9 AS base
 # Change root user to use 'apt-get'
 USER root
 RUN sudo apt-get update && \
-apt-get install -y libpq-dev gcc build-essential
+apt-get install -y libpq-dev gcc build-essential wget
+
+RUN mkdir -p /opt/spark/jars/ && wget -O /opt/spark/jars/postgresql-42.2.16.jar https://jdbc.postgresql.org/download/postgresql-42.2.16.jar
 
 USER airflow
 RUN pip install --upgrade pip
