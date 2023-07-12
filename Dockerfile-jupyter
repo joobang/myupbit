@@ -1,0 +1,5 @@
+FROM jupyter/pyspark-notebook:latest
+
+USER root
+RUN apt-get update && apt-get install -y wget
+RUN wget -P /usr/local/spark/jars/ https://jdbc.postgresql.org/download/postgresql-42.2.16.jar
