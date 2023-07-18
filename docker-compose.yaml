@@ -220,9 +220,6 @@ services:
       - ./data:/data
   
   spark-worker1:
-    build: 
-      context: .
-      dockerfile: Dockerfile-spark
     image: bde2020/spark-worker:3.1.1-hadoop3.2
     container_name: spark-worker1
     environment:
@@ -233,9 +230,6 @@ services:
       - spark-master
 
   spark-worker2:
-    build: 
-      context: .
-      dockerfile: Dockerfile-spark
     image: bde2020/spark-worker:3.1.1-hadoop3.2
     container_name: spark-worker2
     environment:
@@ -246,9 +240,6 @@ services:
       - spark-master
 
   spark-worker3:
-    build: 
-      context: .
-      dockerfile: Dockerfile-spark
     image: bde2020/spark-worker:3.1.1-hadoop3.2
     container_name: spark-worker3
     environment:
