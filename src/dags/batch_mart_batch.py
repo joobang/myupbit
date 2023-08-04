@@ -27,14 +27,14 @@ dag_default_args: Dict[str, Any] = {
 }
 
 with DAG(
-    dag_id='candle_mart',
+    dag_id='candle_mart_batch',
     default_args=dag_default_args,
     description='get KRW-BTC candle mart',
     schedule_interval='@once'
 ) as dag:
     
     insert_local = PostgresOperator(
-        task_id='create_mart',
+        task_id='create_mart_batch',
         sql="""
             CREATE TABLE candle_trend AS
             SELECT candle_date_time_utc,
