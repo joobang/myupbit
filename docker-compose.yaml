@@ -46,20 +46,6 @@ x-airflow-common:
       condition: service_healthy
 
 services:
-  redash:
-      image: redash/redash:latest
-      depends_on:
-        - postgres
-        - redis
-      ports:
-        - "5000:5000"
-      environment:
-        PYTHONUNBUFFERED: 0
-        REDASH_LOG_LEVEL: "INFO"
-        REDASH_REDIS_URL: "redis://redis:6379/0"
-        REDASH_DATABASE_URL: "postgresql://postgres:airflow@postgres/airflow"
-        REDASH_COOKIE_SECRET: veryverysecret
-      command: server
   postgres:
     image: postgres:13
     environment:
@@ -278,6 +264,21 @@ services:
       - JUPYTER_ENABLE_LAB=yes
     depends_on:
       - spark-master
+  
+  redash:
+      image: redash/redash:latest
+      depends_on:
+        - postgres
+        - redis
+      ports:
+        - "5000:5000"
+      environment:
+        PYTHONUNBUFFERED: 0
+        REDASH_LOG_LEVEL: "INFO"
+        REDASH_REDIS_URL: "redis://redis:6379/0"
+        REDASH_DATABASE_URL: "postgresql+psycopg2://airflow:airflow@postgres_analytics:5432/upbit"
+        REDASH_COOKIE_SECRET: veryverysecret
+      command: server
 
 volumes:
   postgres-db-volume:
