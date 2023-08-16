@@ -36,12 +36,13 @@ with DAG(
     insert_local = PostgresOperator(
         task_id='create_mart_batch',
         sql="""
+            DROP TABLE IF EXISTS candle_trend;
             CREATE TABLE candle_trend AS
             SELECT candle_date_time_utc,
 	            high_price - low_price as daily_volatility,
                 AVG(trade_price) OVER (ORDER BY candle_date_time_utc ROWS BETWEEN 29 PRECEDING AND CURRENT ROW) as moving_avg_month,
                 AVG(trade_price) OVER (ORDER BY candle_date_time_utc ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) as moving_avg_week
-            FROM day_candle
+            FROM day_candle;
         """,
         postgres_conn_id="docker_postgres"
     )
