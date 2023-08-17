@@ -266,7 +266,7 @@ services:
       - spark-master
   
   redash:
-      image: redash/redash:latest
+      image: redash/redash:10.1.0.b50633
       depends_on:
         - postgres
         - redis
