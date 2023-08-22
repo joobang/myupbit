@@ -268,7 +268,7 @@ services:
   redash:
       image: redash/redash:10.1.0.b50633
       depends_on:
-        - postgres
+        - postgres_analytics
         - redis
       ports:
         - "5000:5000"
